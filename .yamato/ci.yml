@@ -1,0 +1,76 @@
+tests:
+  - name: CI-Tools Test Windows
+    os: win
+    type: Unity::VM::GPU
+    image: sdet/gamecode_win10:v0.1.0-539067
+    flavor: b1.medium
+    #Relative path of the project. This is used to launch the editor AND trigger the package inside the Packages project folder
+    projectpath: TestProjects/CoreRP_Tests
+modes:
+  - editmode
+editorrevisions:
+  - name: 2018.3-release
+    revision: 16c3bea1c6ed29f744ff45874e9123f019d96785
+---
+{% for test in tests %}
+{% for editor in editorrevisions %}
+{% for mode in modes %}
+{{ test.os }}_{{ editor.name }}_{{ mode }}:
+  name: {{ test.name }} - {{editor.name}} - {{ mode }}
+  agent:
+    type: {{ test.type }}
+    image: {{ test.image }}
+    flavor: {{ test.flavor }}
+  commands:
+    # PRE-STEP COMMANDS SHOULD GO AFTER THIS LINE
+    # END OF PRE-STEP COMMANDS SECTION
+    #THE FOLLOWING LINES ARE FOR PACKAGE INFRASTRUCTURE SETUP AND TOOLS
+    # Install ci tools dependencies
+    - npm install upm-ci-utils -g --registry https://api.bintray.com/npm/unity/unity-npm
+    - upm-ci project test {{ test.os }} {{ editor.revision }}
+    # END OF PACKAGE INFRASTRUCTURE STEPS
+    # POST-STEP COMMANDS SHOULD GO HERE
+    # E.G.: Modify packages inside the Packages folder before calling the package pack command
+    #END OF POST-STEP COMMANDS SECTION
+    #THE FOLLOWING LINE CREATES THE TGZ FOR PACKAGES INSIDE THE SPECIFIED PATH
+  artifacts:
+    logs.zip:
+      paths:
+        - "automation/logs/**"
+    test-results.zip:
+      paths:
+        - "automation/test-results/**"
+  triggers:
+    pushes:
+      only:
+        - ci-tools
+{% endfor %}
+{% endfor %}
+{% endfor %}
+
+build_packages:
+  name: Build Packages
+  agent:
+    type: Unity::VM
+    image: sdet/gamecode_win10:v0.1.0-539067
+    flavor: b1.small
+  commands:
+    # Install ci tools dependencies
+    - npm install upm-ci-utils -g --registry https://api.bintray.com/npm/unity/unity-npm
+    - upm-ci package pack --artifacts-path .
+  artifacts:
+    packages.zip:
+      paths:
+        - "*.tgz"
+  dependencies:
+    {% for test in tests %}
+    {% for editor in editorrevisions %}
+    {% for mode in modes %}
+    - .yamato/ci.yml#{{ test.os }}_{{ editor.name }}_{{ mode }}
+    {% endfor %}
+    {% endfor %}
+    {% endfor %}
+  triggers:
+    pushes:
+      only:
+        - ci-tools
