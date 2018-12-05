@@ -2,7 +2,7 @@ tests:
   - name: CI-Tools Test Windows
     os: win
     type: Unity::VM::GPU
-    image: cds-ops/win10-vs2017:stable
+    image: sdet/gamecode_win10:latest
     flavor: b1.medium
     #Relative path of the project. This is used to launch the editor AND trigger the package inside the Packages project folder
     projectpath: TestProjects/CoreRP_Tests
