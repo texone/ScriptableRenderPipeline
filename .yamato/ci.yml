@@ -12,7 +12,7 @@ editorrevisions:
   - name: 2018.3-release
     revision: 16c3bea1c6ed29f744ff45874e9123f019d96785
 customcommands:
-  - .Editor/Unity.exe -batchmode -projectPath TestProjects/VisualEffectGraph -forgetProjectPath -automated -testresults automation/test-results/TestResults_editor_VisualEffectGraph.xml -logfile automation/logs/editor_editor_VisualEffectGraph.log -runEditorTests
+  - ".Editor/Unity.exe -batchmode -projectPath TestProjects/VisualEffectGraph -forgetProjectPath -automated -testresults automation/test-results/TestResults_editor_VisualEffectGraph.xml -logfile automation/logs/editor_editor_VisualEffectGraph.log -runEditorTests"
 ---
 {% for test in tests %}
 {% for editor in editorrevisions %}
