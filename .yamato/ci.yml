@@ -12,7 +12,7 @@ editorrevisions:
   - name: 2018.3-release
     revision: 16c3bea1c6ed29f744ff45874e9123f019d96785
 customcommands:
-  - .Editor/Unity.exe -batchmode -projectPath TestProjects/VisualEffectGraph -forgetProjectPath -automated -testresults automation/test-results/TestResults_editor_VisualEffectGraph.xml -logfile automation/logs/editor_editor_VisualEffectGraph.log -runEditorTests
+  - cmd: .Editor/Unity.exe -batchmode -projectPath TestProjects/VisualEffectGraph -forgetProjectPath -automated -testresults automation/test-results/TestResults_editor_VisualEffectGraph.xml -logfile automation/logs/editor_editor_VisualEffectGraph.log -runEditorTests
 ---
 {% for test in tests %}
 {% for editor in editorrevisions %}
@@ -30,7 +30,7 @@ customcommands:
     # Install ci tools dependencies
     - npm install upm-ci-utils -g --registry https://api.bintray.com/npm/unity/unity-npm
     {% for command in customcommands %}
-    - upm-ci project test {{ test.os }} {{ editor.revision }} --custom-cmd "{{ command }}"
+    - upm-ci project test {{ test.os }} {{ editor.revision }} --custom-cmd "{{ command.cmd }}"
     {% endfor %}
     # END OF PACKAGE INFRASTRUCTURE STEPS
     # POST-STEP COMMANDS SHOULD GO HERE
