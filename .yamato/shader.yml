@@ -20,8 +20,8 @@ projects:
 {% for test in tests %}
 {% for editor in editorrevisions %}
 {% for mode in modes %}
-{{ test.os }}_{{ editor.name }}_{{ mode }}:
-  name: {{ test.name }} - {{editor.name}} - {{ mode }}
+shadergraph_test_{{ mode }}:
+  name: shadergraph_test - {{ mode }}
   agent:
     type: {{ test.type }}
     image: {{ test.image }}
@@ -33,7 +33,7 @@ projects:
     # Install ci tools dependencies
     - npm install upm-ci-utils -g --registry https://api.bintray.com/npm/unity/unity-npm
     {% for project in projects %}
-    - upm-ci project test {{ test.os }} {{ editor.revision }} --custom-cmd "powershell.exe .Editor/Unity.exe -batchmode -projectPath TestProjects/{{ project }} -automated -testresults ../automation/test-results/testresults_{{ mode }}_{{ project }}.xml -logfile ./automation/logs/log_{{ mode }}_{{ project }}.log -runtests -testplatform {{ mode }}
+    - upm-ci project test {{ test.os }} {{ editor.revision }} --custom-cmd "powershell.exe .Editor/Unity.exe -batchmode -projectPath TestProjects/{{ project }} -automated -testresults ../automation/test-results/testresults_{{ mode }}_{{ project }}.xml -logfile ./automation/logs/log_{{ mode }}_{{ project }}.log -runtests -silentcrashes -testplatform {{ mode }}
     {% endfor %}
     # END OF PACKAGE INFRASTRUCTURE STEPS
     # POST-STEP COMMANDS SHOULD GO HERE
