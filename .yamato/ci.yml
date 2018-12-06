@@ -13,6 +13,7 @@ editorrevisions:
 projects:
   - VisualEffectGraph
   - ShaderGraph
+  - HDRP_Tests
 ---
 {% for test in tests %}
 {% for editor in editorrevisions %}
@@ -31,7 +32,7 @@ projects:
     - npm install upm-ci-utils -g --registry https://api.bintray.com/npm/unity/unity-npm
     {% for project in projects %}
     - dir
-    - upm-ci project test {{ test.os }} {{ editor.revision }} --custom-cmd "powershell.exe .Editor/Unity.exe -batchmode -projectPath TestProjects/{{ project }} -automated -testresults ./automation/test-results/testresults_editor_{{ project }}.xml -logfile ./automation/logs/log_editor_{{ project }}.log -runEditorTests
+    - upm-ci project test {{ test.os }} {{ editor.revision }} --custom-cmd "powershell.exe .Editor/Unity.exe -batchmode -projectPath TestProjects/{{ project }} -automated -testresults ../automation/test-results/testresults_editor_{{ project }}.xml -logfile ./automation/logs/log_editor_{{ project }}.log -runEditorTests
     {% endfor %}
     # END OF PACKAGE INFRASTRUCTURE STEPS
     # POST-STEP COMMANDS SHOULD GO HERE
