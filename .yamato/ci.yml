@@ -60,7 +60,7 @@ build_packages:
   commands:
     # Install ci tools dependencies
     - npm install upm-ci-utils -g --registry https://api.bintray.com/npm/unity/unity-npm
-    - upm-ci package pack --artifacts-path .
+    - upm-ci project pack --artifacts-path .
   artifacts:
     packages.zip:
       paths:
