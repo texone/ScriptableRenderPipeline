@@ -6,14 +6,16 @@ tests:
     flavor: b1.medium
 modes:
   - editmode
+  - playmode
 editorrevisions:
   - name: 2018.3-release
     revision: 16c3bea1c6ed29f744ff45874e9123f019d96785
 #Foldername of the different projects to test on a single run
 projects:
-  - VisualEffectGraph
+  - LWGraphicsTest
+  #- VisualEffectGraph
   - ShaderGraph
-  - HDRP_Tests
+  #- HDRP_Tests
 ---
 {% for test in tests %}
 {% for editor in editorrevisions %}
@@ -31,8 +33,7 @@ projects:
     # Install ci tools dependencies
     - npm install upm-ci-utils -g --registry https://api.bintray.com/npm/unity/unity-npm
     {% for project in projects %}
-    - dir
-    - upm-ci project test {{ test.os }} {{ editor.revision }} --custom-cmd "powershell.exe .Editor/Unity.exe -batchmode -projectPath TestProjects/{{ project }} -automated -testresults ../automation/test-results/testresults_editor_{{ project }}.xml -logfile ./automation/logs/log_editor_{{ project }}.log -runEditorTests
+    - upm-ci project test {{ test.os }} {{ editor.revision }} --custom-cmd "powershell.exe .Editor/Unity.exe -batchmode -projectPath TestProjects/{{ project }} -automated -testresults ../automation/test-results/testresults_{{ mode }}_{{ project }}.xml -logfile ./automation/logs/log_{{ mode }}_{{ project }}.log -runtests -testplatform {{ mode }}
     {% endfor %}
     # END OF PACKAGE INFRASTRUCTURE STEPS
     # POST-STEP COMMANDS SHOULD GO HERE
