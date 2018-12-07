@@ -6,16 +6,12 @@ tests:
     flavor: b1.medium
 modes:
   - editmode
-  - playmode
 editorrevisions:
   - name: 2018.3-release
     revision: 16c3bea1c6ed29f744ff45874e9123f019d96785
 #Foldername of the different projects to test on a single run
 projects:
-  - ShaderGraph
-  #- LWGraphicsTest
-  #- VisualEffectGraph
-  #- HDRP_Tests
+  - VisualEffectGraph
 ---
 {% for test in tests %}
 {% for editor in editorrevisions %}
