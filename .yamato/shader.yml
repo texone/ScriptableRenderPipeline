@@ -29,7 +29,7 @@ shadergraph_test_{{ mode }}:
     # Install ci tools dependencies
     - npm install upm-ci-utils -g --registry https://api.bintray.com/npm/unity/unity-npm
     {% for project in projects %}
-    - upm-ci project test {{ test.os }} {{ editor.revision }} --custom-cmd "powershell.exe .Editor/Unity.exe -batchmode -projectPath TestProjects/{{ project }} -automated -testresults ../automation/test-results/testresults_{{ mode }}_{{ project }}.xml -logfile ./automation/logs/log_{{ mode }}_{{ project }}.log -runtests -silentcrashes -testplatform {{ mode }}
+    - upm-ci project test {{ test.os }} {{ editor.revision }} --custom-cmd "powershell.exe .Editor/Unity.exe -batchmode -projectPath TestProjects/{{ project }} -automated -testresults ../automation/test-results/testresults_{{ mode }}_{{ project }}.xml -logfile ./automation/logs/log_{{ mode }}_{{ project }}.log -silentcrashes -runEditorTests
     {% endfor %}
     # END OF PACKAGE INFRASTRUCTURE STEPS
     # POST-STEP COMMANDS SHOULD GO HERE
