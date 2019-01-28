@@ -61,8 +61,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         /// <param name="position">Position for the camera.</param>
         /// <param name="target">Target to render to.</param>
         /// <param name="staticFlags">Only used in the Editor fo cubemaps.
-        /// This is bitmask of <see cref="UnityEditor.StaticEditorFlags"/> and objects with at least one of these flags
-        /// will be culled during rendering.
+        /// This is bitmask of <see cref="UnityEditor.StaticEditorFlags"/> only objects with these flags will be rendered
         /// </param>
         public static void Render(
             CameraSettings settings,
