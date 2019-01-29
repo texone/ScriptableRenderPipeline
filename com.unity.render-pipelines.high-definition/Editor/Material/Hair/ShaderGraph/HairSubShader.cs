@@ -294,6 +294,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             MaterialName = "Hair",
             ShaderPassName = "SHADERPASS_FORWARD",
             CullOverride = "Cull Front",
+            ColorMaskOverride = "ColorMask [_ColorMaskTransparentVel] 1",
             ExtraDefines = HDSubShaderUtilities.s_ExtraDefinesForwardTransparent,
             Includes = new List<string>()
             {
@@ -413,6 +414,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 };
 
                 pass.ExtraDefines.Remove("#define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST");
+                pass.ColorMaskOverride = "ColorMask [_ColorMaskTransparentVel] 1";
                 if (masterNode.surfaceType == SurfaceType.Opaque && masterNode.alphaTest.isOn)
                 {
                     pass.ExtraDefines.Add("#define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST");
@@ -559,6 +561,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 {
                     activeFields.Add("AlphaFog");
                 }
+
+                if (masterNode.transparentWritesVelocity.isOn)
+                {
+                    activeFields.Add("TransparentWritesVelocity");
+                }
+
             }
 
             if (!masterNode.receiveDecals.isOn)

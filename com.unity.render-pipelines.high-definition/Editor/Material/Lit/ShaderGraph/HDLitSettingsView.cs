@@ -168,8 +168,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline.Drawing
                     });
                 });
 
-
-
                 if (m_Node.renderingPass != HDRenderQueue.RenderQueueType.PreRefraction)
                 {
                     ps.Add(new PropertyRow(CreateLabel("Refraction Model", indentLevel)), (row) =>
