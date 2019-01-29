@@ -836,7 +836,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 {
                     activeFields.Add("TransparentWritesVelocity");
                 }
-
             }
 
             if (!masterNode.receiveDecals.isOn)
