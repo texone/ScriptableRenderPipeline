@@ -2,13 +2,25 @@
 #error SHADERPASS_is_not_correctly_define
 #endif
 
+#ifdef _WRITE_TRANSPARENT_VELOCITY
+#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/VelocityCommon.hlsl"
+#else
 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/VertMesh.hlsl"
+#endif
 
-PackedVaryingsType Vert(AttributesMesh inputMesh)
+PackedVaryingsType Vert(AttributesMesh inputMesh
+#ifdef _WRITE_TRANSPARENT_VELOCITY
+    , AttributesPass inputPass
+#endif
+)
 {
     VaryingsType varyingsType;
     varyingsType.vmesh = VertMesh(inputMesh);
+#ifdef _WRITE_TRANSPARENT_VELOCITY
+    return VelocityVS(varyingsType, inputMesh, inputPass);
+#else
     return PackVaryingsType(varyingsType);
+#endif
 }
 
 #ifdef TESSELLATION_ON
@@ -17,6 +29,12 @@ PackedVaryingsToPS VertTesselation(VaryingsToDS input)
 {
     VaryingsToPS output;
     output.vmesh = VertMeshTesselation(input.vmesh);
+#ifdef _WRITE_TRANSPARENT_VELOCITY
+    VelocityPositionZBias(output);
+
+    output.vpass.positionCS = input.vpass.positionCS;
+    output.vpass.previousPositionCS = input.vpass.previousPositionCS;
+#endif
     return PackVaryingsToPS(output);
 }
 
@@ -31,7 +49,10 @@ void Frag(PackedVaryingsToPS packedInput,
             OUTPUT_SSSBUFFER(outSSSBuffer)
         #else
             out float4 outColor : SV_Target0
-        #endif
+        #ifdef _WRITE_TRANSPARENT_VELOCITY
+          , out float4 outVelocity : SV_Target1
+        #endif // _WRITE_TRANSPARENT_VELOCITY
+        #endif // OUTPUT_SPLIT_LIGHTING
         #ifdef _DEPTHOFFSET_ON
             , out float outputDepth : SV_Depth
         #endif
@@ -132,6 +153,12 @@ void Frag(PackedVaryingsToPS packedInput,
 #else
         outColor = ApplyBlendMode(diffuseLighting, specularLighting, builtinData.opacity);
         outColor = EvaluateAtmosphericScattering(posInput, V, outColor);
+#endif
+#ifdef _WRITE_TRANSPARENT_VELOCITY
+        VaryingsPassToPS inputPass = UnpackVaryingsPassToPS(packedInput.vpass);
+        float2 velocity = CalculateVelocity(inputPass.positionCS, inputPass.previousPositionCS);
+        EncodeVelocity(velocity * 0.5, outVelocity);
+        outVelocity.zw = 1.0;
 #endif
     }
 

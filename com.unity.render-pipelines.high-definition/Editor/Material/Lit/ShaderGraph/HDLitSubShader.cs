@@ -829,6 +829,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 {
                     activeFields.Add("AlphaFog");
                 }
+
+                if (masterNode.transparentWritesVelocity.isOn)
+                {
+                    activeFields.Add("TransparentWritesVelocity");
+                }
+
             }
 
             if (!masterNode.receiveDecals.isOn)

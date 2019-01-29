@@ -210,6 +210,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
         RenderTexture                   m_TemporaryTargetForCubemaps;
         Stack<Camera>                   m_ProbeCameraPool = new Stack<Camera>();
 
+        RenderTargetIdentifier[] m_MRTTransparentVelocity;
         RenderTargetIdentifier[] m_MRTWithSSS;
         string m_ForwardPassProfileName;
 
@@ -372,6 +373,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             m_DebugDisplaySettings.data.msaaSamples = m_MSAASamples;
 
             m_MRTWithSSS = new RenderTargetIdentifier[2 + m_SSSBufferManager.sssBufferCount];
+            m_MRTTransparentVelocity = new RenderTargetIdentifier[2];
 #if ENABLE_RAYTRACING
             m_RayTracingManager.Init(m_Asset.renderPipelineSettings, m_Asset.renderPipelineResources, m_BlueNoise);
             m_RaytracingReflections.Init(m_Asset, m_SkyManager, m_RayTracingManager, m_SharedRTManager);
@@ -747,6 +749,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 hdCamera.SetupGlobalParams(cmd, m_Time, m_LastTime, m_FrameCount);
 
                 cmd.SetGlobalVector(HDShaderIDs._IndirectLightingMultiplier, new Vector4(VolumeManager.instance.stack.GetComponent<IndirectLightingController>().indirectDiffuseIntensity, 0, 0, 0));
+
+                // It will be overridden for transparent pass.
+                cmd.SetGlobalInt(HDShaderIDs._ColorMaskTransparentVel, (int)UnityEngine.Rendering.ColorWriteMask.All);
 
                 if (hdCamera.frameSettings.IsEnabled(FrameSettingsField.MotionVectors))
                 {
@@ -1781,6 +1786,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
                 if (hdCamera.frameSettings.IsEnabled(FrameSettingsField.Postprocess))
                 {
+                    // Set the depth buffer to the main one to avoid missing out on transparent depth for post process.
+                    cmd.SetGlobalTexture(HDShaderIDs._CameraDepthTexture, m_SharedRTManager.GetDepthStencilBuffer());
+
                     // Post-processes output straight to the backbuffer
                     m_PostProcessSystem.Render(
                         cmd: cmd,
@@ -2592,7 +2600,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 }
                 else
                 {
-                    HDUtils.SetRenderTarget(cmd, hdCamera, hdCamera.frameSettings.IsEnabled(FrameSettingsField.MSAA) ? m_CameraColorMSAABuffer : m_CameraColorBuffer, m_SharedRTManager.GetDepthStencilBuffer(hdCamera.frameSettings.IsEnabled(FrameSettingsField.MSAA)));
+                    cmd.SetGlobalInt(HDShaderIDs._ColorMaskTransparentVel, hdCamera.frameSettings.IsEnabled(FrameSettingsField.ObjectMotionVectors) ? (int)UnityEngine.Rendering.ColorWriteMask.All : 0);
+
+                    m_MRTTransparentVelocity[0] = hdCamera.frameSettings.IsEnabled(FrameSettingsField.MSAA) ? m_CameraColorMSAABuffer : m_CameraColorBuffer;
+                    m_MRTTransparentVelocity[1] = m_SharedRTManager.GetVelocityBuffer(hdCamera.frameSettings.IsEnabled(FrameSettingsField.MSAA));
+
+                    HDUtils.SetRenderTarget(cmd, hdCamera, m_MRTTransparentVelocity, m_SharedRTManager.GetDepthStencilBuffer(hdCamera.frameSettings.IsEnabled(FrameSettingsField.MSAA)));
                     if ((hdCamera.frameSettings.IsEnabled(FrameSettingsField.Decals)) && (DecalSystem.m_DecalDatasCount > 0)) // enable d-buffer flag value is being interpreted more like enable decals in general now that we have clustered
                                                                                                       // decal datas count is 0 if no decals affect transparency
                     {
@@ -2604,6 +2617,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     {
                         transparentRange = HDRenderQueue.k_RenderQueue_AllTransparent;
                     }
+                    m_currentRendererConfigurationBakedLighting |= PerObjectData.MotionVectors;
                     RenderTransparentRenderList(cullResults, hdCamera, renderContext, cmd,  m_Asset.renderPipelineSettings.supportTransparentBackface ? m_AllTransparentPassNames : m_TransparentNoBackfaceNames, m_currentRendererConfigurationBakedLighting, transparentRange);
                 }
             }
