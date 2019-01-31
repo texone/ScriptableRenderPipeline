@@ -2600,7 +2600,8 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 }
                 else
                 {
-                    cmd.SetGlobalInt(HDShaderIDs._ColorMaskTransparentVel, hdCamera.frameSettings.IsEnabled(FrameSettingsField.ObjectMotionVectors) ? (int)UnityEngine.Rendering.ColorWriteMask.All : 0);
+                    bool renderVelocitiesForTransparent = hdCamera.frameSettings.IsEnabled(FrameSettingsField.MotionVectors) && hdCamera.frameSettings.IsEnabled(FrameSettingsField.TransparentsWriteVelocity);
+                    cmd.SetGlobalInt(HDShaderIDs._ColorMaskTransparentVel, renderVelocitiesForTransparent ? (int)UnityEngine.Rendering.ColorWriteMask.All : 0);
 
                     m_MRTTransparentVelocity[0] = hdCamera.frameSettings.IsEnabled(FrameSettingsField.MSAA) ? m_CameraColorMSAABuffer : m_CameraColorBuffer;
                     m_MRTTransparentVelocity[1] = m_SharedRTManager.GetVelocityBuffer(hdCamera.frameSettings.IsEnabled(FrameSettingsField.MSAA));
