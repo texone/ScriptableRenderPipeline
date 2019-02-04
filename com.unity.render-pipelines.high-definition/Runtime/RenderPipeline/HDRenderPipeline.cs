@@ -1801,9 +1801,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             // At this point, m_CameraColorBuffer has been filled by either debug views are regular rendering so we can push it here.
             PushColorPickerDebugTexture(cmd, hdCamera, m_CameraColorBuffer);
 
-            // Set the depth buffer to the main one to avoid missing out on transparent depth for post process.
-            cmd.SetGlobalTexture(HDShaderIDs._CameraDepthTexture, m_SharedRTManager.GetDepthStencilBuffer());
-
             RenderPostProcess(cullingResults, hdCamera, target.id, renderContext, cmd);
 
             // In developer build, we always render post process in m_AfterPostProcessBuffer at (0,0) in which we will then render debug.
@@ -3134,6 +3131,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
             // We render AfterPostProcess objects first into a separate buffer that will be composited in the final post process pass
             RenderAfterPostProcess(cullResults, hdCamera, renderContext, cmd);
+
+            // Set the depth buffer to the main one to avoid missing out on transparent depth for post process.
+            cmd.SetGlobalTexture(HDShaderIDs._CameraDepthTexture, m_SharedRTManager.GetDepthStencilBuffer());
 
             // Post-processes output straight to the backbuffer
             m_PostProcessSystem.Render(
