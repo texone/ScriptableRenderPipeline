@@ -3,24 +3,13 @@
 #endif
 
 #ifdef _WRITE_TRANSPARENT_VELOCITY
-#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/VelocityCommon.hlsl"
-#else
-#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/VertMesh.hlsl"
-#endif
+#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/VelocityVertexShaderCommon.hlsl"
 
-PackedVaryingsType Vert(AttributesMesh inputMesh
-#ifdef _WRITE_TRANSPARENT_VELOCITY
-    , AttributesPass inputPass
-#endif
-)
+PackedVaryingsType Vert(AttributesMesh inputMesh, AttributesPass inputPass)
 {
     VaryingsType varyingsType;
     varyingsType.vmesh = VertMesh(inputMesh);
-#ifdef _WRITE_TRANSPARENT_VELOCITY
     return VelocityVS(varyingsType, inputMesh, inputPass);
-#else
-    return PackVaryingsType(varyingsType);
-#endif
 }
 
 #ifdef TESSELLATION_ON
@@ -29,18 +18,47 @@ PackedVaryingsToPS VertTesselation(VaryingsToDS input)
 {
     VaryingsToPS output;
     output.vmesh = VertMeshTesselation(input.vmesh);
-#ifdef _WRITE_TRANSPARENT_VELOCITY
     VelocityPositionZBias(output);
 
     output.vpass.positionCS = input.vpass.positionCS;
     output.vpass.previousPositionCS = input.vpass.previousPositionCS;
-#endif
+
     return PackVaryingsToPS(output);
 }
 
-#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/TessellationShare.hlsl"
+#endif // TESSELLATION_ON
+
+#else // _WRITE_TRANSPARENT_VELOCITY
+
+#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/VertMesh.hlsl"
+
+PackedVaryingsType Vert(AttributesMesh inputMesh)
+{
+    VaryingsType varyingsType;
+    varyingsType.vmesh = VertMesh(inputMesh);
+
+    return PackVaryingsType(varyingsType);
+}
+
+#ifdef TESSELLATION_ON
+
+PackedVaryingsToPS VertTesselation(VaryingsToDS input)
+{
+    VaryingsToPS output;
+    output.vmesh = VertMeshTesselation(input.vmesh);
+
+    return PackVaryingsToPS(output);
+}
+
 
 #endif // TESSELLATION_ON
+
+#endif // _WRITE_TRANSPARENT_VELOCITY
+
+
+#ifdef TESSELLATION_ON
+#include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/TessellationShare.hlsl"
+#endif
 
 void Frag(PackedVaryingsToPS packedInput,
         #ifdef OUTPUT_SPLIT_LIGHTING
