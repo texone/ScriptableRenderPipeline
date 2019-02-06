@@ -31,6 +31,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             public static GUIContent metallicText = new GUIContent("Metallic Scale", "Metallic Scale");
             public static GUIContent aoRemappingText = new GUIContent("AO Remapping", "AO remapping");
             public static GUIContent maskMapBlueScaleText = new GUIContent("Scale Mask Map Blue Channel", "Scale the Mask Map Blue channel which can be used as Opacity depends on blend source chosen");
+            public static GUIContent emissiveText = new GUIContent("Emission Map", "Emission Map (RGB) in nits unit");
 
             public static GUIContent[] maskMapText =
             {
@@ -117,6 +118,15 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         protected MaterialProperty maskMapBlueScale = new MaterialProperty();
         protected const string kMaskMapBlueScale = "_DecalMaskMapBlueScale";
 
+        protected MaterialProperty emissiveColor = new MaterialProperty();
+        protected const string kEmissiveColor = "_EmissiveColor";
+
+        protected MaterialProperty emissiveColorMap = new MaterialProperty();
+        protected const string kEmissiveColorMap = "_EmissiveColorMap";
+
+        protected MaterialProperty emissive = new MaterialProperty();
+        protected const string kEmissive = "_Emissive";
+
         protected MaterialEditor m_MaterialEditor;
 
         void FindMaterialProperties(MaterialProperty[] props)
@@ -141,6 +151,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             smoothnessRemapMax = FindProperty(kSmoothnessRemapMax, props);
             metallicScale = FindProperty(kMetallicScale, props);
             maskMapBlueScale = FindProperty(kMaskMapBlueScale, props);
+            emissiveColor = FindProperty(kEmissiveColor, props);
+            emissiveColorMap = FindProperty(kEmissiveColorMap, props);
+            emissive = FindProperty(kEmissive, props);
+
 
             // always instanced
             SerializedProperty instancing = m_MaterialEditor.serializedObject.FindProperty("m_EnableInstancingVariants");
@@ -156,6 +170,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             CoreUtils.SetKeyword(material, "_COLORMAP", material.GetTexture(kBaseColorMap));
             CoreUtils.SetKeyword(material, "_NORMALMAP", material.GetTexture(kNormalMap));
             CoreUtils.SetKeyword(material, "_MASKMAP", material.GetTexture(kMaskMap));
+            CoreUtils.SetKeyword(material, "_EMISSIVEMAP", material.GetTexture(kEmissiveColorMap));
 
             material.SetInt(kDecalStencilWriteMask, (int)HDRenderPipeline.StencilBitMask.Decals);
             material.SetInt(kDecalStencilRef, (int)HDRenderPipeline.StencilBitMask.Decals);
@@ -296,6 +311,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
                         m_MaterialEditor.ShaderProperty(maskMapBlueScale, Styles.maskMapBlueScaleText);
                         m_MaterialEditor.ShaderProperty(decalBlend, Styles.decalBlendText);
+                        m_MaterialEditor.ShaderProperty(emissive, "Emissive");
+                        if(emissive.floatValue == 1.0f)
+                            m_MaterialEditor.TexturePropertySingleLine(Styles.emissiveText, emissiveColorMap, emissiveColor);
 
                         EditorGUI.indentLevel--;
 
