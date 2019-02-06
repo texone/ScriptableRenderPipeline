@@ -2613,12 +2613,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     }
 
                     RenderQueueRange transparentRange = pass == ForwardPass.PreRefraction ? HDRenderQueue.k_RenderQueue_PreRefraction : HDRenderQueue.k_RenderQueue_Transparent;
-                    if(!hdCamera.frameSettings.IsEnabled(FrameSettingsField.RoughRefraction))
+                    if (!hdCamera.frameSettings.IsEnabled(FrameSettingsField.RoughRefraction))
                     {
                         transparentRange = HDRenderQueue.k_RenderQueue_AllTransparent;
                     }
 
-                    if(renderVelocitiesForTransparent)
+                    if (renderVelocitiesForTransparent)
                     {
                         m_currentRendererConfigurationBakedLighting |= PerObjectData.MotionVectors;
                     }
