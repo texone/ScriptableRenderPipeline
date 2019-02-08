@@ -141,7 +141,7 @@ Shader "Hidden/HDRP/DebugFullScreen"
                 {
                     float4 color = SAMPLE_TEXTURE2D(_DebugFullScreenTexture, s_point_clamp_sampler, input.texcoord);
 
-                    if (AnyIsNaN(color) || AnyIsInf(color))
+                    if (AnyIsNan(color) || any(isinf(color)))
                     {
                         color = float4(1.0, 0.0, 0.0, 1.0);
                     }
