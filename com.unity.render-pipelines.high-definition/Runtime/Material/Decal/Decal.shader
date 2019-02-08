@@ -21,7 +21,15 @@ Shader "HDRP/Decal"
 		[HideInInspector] _DrawOrder("_DrawOrder", Int) = 0
         [ToggleUI] _Emissive("_Emissive", Range(0.0, 1.0)) = 0.0
         [HDR] _EmissiveColor("EmissiveColor", Color) = (0, 0, 0)
+        // Used only to serialize the LDR and HDR emissive color in the material UI,
+        // in the shader only the _EmissiveColor should be used
+        [HideInInspector] _EmissiveColorLDR("EmissiveColor LDR", Color) = (0, 0, 0)
+        [HDR][HideInInspector] _EmissiveColorHDR("EmissiveColor HDR", Color) = (0, 0, 0)
         _EmissiveColorMap("EmissiveColorMap", 2D) = "white" {}
+        [HideInInspector] _EmissiveIntensityUnit("Emissive Mode", Int) = 0
+        [ToggleUI] _UseEmissiveIntensity("Use Emissive Intensity", Int) = 0
+        _EmissiveIntensity("Emissive Intensity", Float) = 1
+
 
         // Stencil state
         [HideInInspector] _DecalStencilRef("_DecalStencilRef", Int) = 8 

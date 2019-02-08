@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         enum Expandable : uint
         {
             Input = 1 << 0,
-            Sorting = 1 << 1
+            Sorting = 1 << 1,
         }
         protected override uint defaultExpandedState { get { return (uint)Expandable.Input; } }
 
@@ -32,6 +32,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             public static GUIContent aoRemappingText = new GUIContent("AO Remapping", "Remaps the Material's Ambient Occlusion effect.");
             public static GUIContent maskMapBlueScaleText = new GUIContent("Scale Mask Map Blue Channel", "Scale the blue channel of the Mask Map. You can use this as opacity depending on the blend source you choose.");
  			public static GUIContent emissiveText = new GUIContent("Emission Map", "Emission Map (RGB) in nits unit");
+            public static GUIContent emissiveIntensityText = new GUIContent("Emission Intensity", "");
 
 
             public static GUIContent[] maskMapText =
@@ -128,6 +129,21 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         protected MaterialProperty emissive = new MaterialProperty();
         protected const string kEmissive = "_Emissive";
 
+        protected MaterialProperty emissiveIntensity = null;
+        protected const string kEmissiveIntensity = "_EmissiveIntensity";
+
+        protected MaterialProperty emissiveIntensityUnit = null;
+        protected const string kEmissiveIntensityUnit = "_EmissiveIntensityUnit";
+
+        protected MaterialProperty useEmissiveIntensity = null;
+        protected const string kUseEmissiveIntensity = "_UseEmissiveIntensity";
+
+        protected MaterialProperty emissiveColorLDR = null;
+        protected const string kEmissiveColorLDR = "_EmissiveColorLDR";
+
+        protected MaterialProperty emissiveColorHDR = null;
+        protected const string kEmissiveColorHDR = "_EmissiveColorHDR";
+
         protected MaterialEditor m_MaterialEditor;
 
         void FindMaterialProperties(MaterialProperty[] props)
@@ -155,7 +171,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             emissiveColor = FindProperty(kEmissiveColor, props);
             emissiveColorMap = FindProperty(kEmissiveColorMap, props);
             emissive = FindProperty(kEmissive, props);
-
+            useEmissiveIntensity = FindProperty(kUseEmissiveIntensity, props);
+            emissiveIntensityUnit = FindProperty(kEmissiveIntensityUnit, props);
+            emissiveIntensity = FindProperty(kEmissiveIntensity, props);
+            emissiveColorLDR = FindProperty(kEmissiveColorLDR, props);
+            emissiveColorHDR = FindProperty(kEmissiveColorHDR, props);
 
             // always instanced
             SerializedProperty instancing = m_MaterialEditor.serializedObject.FindProperty("m_EnableInstancingVariants");
@@ -313,8 +333,33 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                         m_MaterialEditor.ShaderProperty(maskMapBlueScale, Styles.maskMapBlueScaleText);
                         m_MaterialEditor.ShaderProperty(decalBlend, Styles.decalBlendText);
                         m_MaterialEditor.ShaderProperty(emissive, "Emissive");
-                        if(emissive.floatValue == 1.0f)
-                            m_MaterialEditor.TexturePropertySingleLine(Styles.emissiveText, emissiveColorMap, emissiveColor);
+                        if (emissive.floatValue == 1.0f)
+                        {
+                            m_MaterialEditor.ShaderProperty(useEmissiveIntensity, "Use Emission Intensity");
+                            
+                            if(useEmissiveIntensity.floatValue == 1.0f)
+                            {
+                                m_MaterialEditor.TexturePropertySingleLine(Styles.emissiveText, emissiveColorMap, emissiveColorLDR);
+                                using (new EditorGUILayout.HorizontalScope())
+                                {
+                                    EmissiveIntensityUnit unit = (EmissiveIntensityUnit)emissiveIntensityUnit.floatValue;
+
+                                    if (unit == EmissiveIntensityUnit.Luminance)
+                                        m_MaterialEditor.ShaderProperty(emissiveIntensity, Styles.emissiveIntensityText);
+                                    else
+                                    {
+                                        float evValue = LightUtils.ConvertLuminanceToEv(emissiveIntensity.floatValue);
+                                        evValue = EditorGUILayout.FloatField(Styles.emissiveIntensityText, evValue);
+                                        emissiveIntensity.floatValue = LightUtils.ConvertEvToLuminance(evValue);
+                                    }
+                                    emissiveIntensityUnit.floatValue = (float)(EmissiveIntensityUnit)EditorGUILayout.EnumPopup(unit);
+                                }
+                            }
+                            else
+                            {
+                                m_MaterialEditor.TexturePropertySingleLine(Styles.emissiveText, emissiveColorMap, emissiveColorHDR);
+                            }
+                        }
 
                         EditorGUI.indentLevel--;
 
@@ -332,6 +377,14 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                         smoothnessRemapMax.floatValue = smoothnessRemapMaxValue;
                         AORemapMin.floatValue = AORemapMinValue;
                         AORemapMax.floatValue = AORemapMaxValue;
+                        if (useEmissiveIntensity.floatValue == 1.0f)
+                        {
+                            emissiveColor.colorValue = emissiveColorLDR.colorValue * emissiveIntensity.floatValue;
+                        }
+                        else
+                        {
+                            emissiveColor.colorValue = emissiveColorHDR.colorValue;
+                        }
 
                         foreach (var obj in m_MaterialEditor.targets)
                             SetupMaterialKeywordsAndPassInternal((Material)obj);
