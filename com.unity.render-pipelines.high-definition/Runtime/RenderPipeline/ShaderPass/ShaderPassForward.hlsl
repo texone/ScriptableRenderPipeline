@@ -175,9 +175,17 @@ void Frag(PackedVaryingsToPS packedInput,
 #endif
 #ifdef _WRITE_TRANSPARENT_VELOCITY
         VaryingsPassToPS inputPass = UnpackVaryingsPassToPS(packedInput.vpass);
-        float2 velocity = CalculateVelocity(inputPass.positionCS, inputPass.previousPositionCS);
-        EncodeVelocity(velocity * 0.5, outVelocity);
-        outVelocity.zw = 1.0;
+        bool forceNoMotion = any(unity_MotionVectorsParams.yw == 0.0);
+        if (forceNoMotion)
+        {
+            outVelocity = float4(2.0, 0.0, 0.0, 0.0);
+        }
+        else
+        {
+            float2 velocity = CalculateVelocity(inputPass.positionCS, inputPass.previousPositionCS);
+            EncodeVelocity(velocity * 0.5, outVelocity);
+            outVelocity.zw = 1.0;
+        }
 #endif
     }
 
